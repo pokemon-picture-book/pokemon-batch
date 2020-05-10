@@ -1,0 +1,20 @@
+{
+  "name": "pokemon-batch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "image": "nohup node src/pokemon-image.js &"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio-httpcli": "^0.7.4",
+    "fs": "0.0.1-security"
+  },
+  "engines": {
+    "node": ">= 14.0.0",
+    "npm": ">= 6.14.4"
+  }
+}
