@@ -1,6 +1,16 @@
 const axios = require('axios');
 
-const species = async () => {
+const GENERATIONS = Object.freeze([
+    { generationNo: 1, s: 0, e: 151 },
+    { generationNo: 2, s: 151, e: 251 },
+    { generationNo: 3, s: 251, e: 386 },
+    { generationNo: 4, s: 386, e: 493 },
+    { generationNo: 5, s: 493, e: 649 },
+    { generationNo: 6, s: 649, e: 721 },
+    { generationNo: 7, s: 721, e: 809 }
+]);
+
+const pokemons = async () => {
     const pokemonId = 1;
     const apiUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
 
@@ -11,35 +21,91 @@ const species = async () => {
     const {
         flavor_text_entries,
         genera,
-        names
+        names,
+        color
     } = data;
 
-    console.log('flavor_text_entries');
     const pokemonFlavorTextEntries = flavor_text_entries.map(({ flavor_text, language, version }) => ({
         pokemonId,
         flavorText: flavor_text,
         language: language.name,
         version: version.name
     }));
+    console.log('flavor_text_entries');
     console.log(pokemonFlavorTextEntries);
     console.log('==============================');
 
-    console.log('generas');
     const pokemonGeneras = genera.map(({ language, genus }) => ({
         pokemonId,
         language: language.name,
         genus
     }));
+    console.log('generas');
     console.log(pokemonGeneras);
     console.log('==============================');
 
-    console.log('names');
     const pokemonLangNames = names.map(({ language, name }) => ({
         pokemonId,
         language: language.name,
         name
     }));
+    console.log('names');
     console.log(pokemonLangNames);
+    console.log('==============================');
+
+
+    const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+
+    const { data } = await axios
+        .get(apiUrl)
+        .catch(console.error);
+
+    const {
+        stats,
+        types,
+        height,
+        weight,
+        order,
+        name,
+    } = data;
+
+    const pokemonType = types.map(({ slot, type }) => ({
+        order: slot,
+        type: type.name
+    }));
+
+    console.log('pokemon_types');
+    console.log(pokemonType);
+    console.log('==============================');
+
+    const pokemonStatus = stats
+        .map(({ stat, base_stat }) => {
+            return {
+                [stat.name]: base_stat
+            }
+        })
+        .reduce((a, c) => Object.assign(a, c), { pokemonId: 1 });
+
+    console.log('status');
+    console.log(pokemonStatus);
+    console.log('==============================');
+
+    const { generationNo } = GENERATIONS.find(
+        g => g.s < pokemonId && pokemonId <= g.e
+    );
+
+    const pokemon = {
+        pokemonId,
+        height,
+        weight,
+        order,
+        name,
+        imageColor: color,
+        generationNo
+    }
+
+    console.log('pokemons');
+    console.log(pokemon);
     console.log('==============================');
 }
 
@@ -163,114 +229,60 @@ const types = async () => {
     console.log('==============================');
 }
 
-const pokemons = async () => {
-    const pokemonId = 1;
-
-    const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
-
-    const { data } = await axios
-        .get(apiUrl)
-        .catch(console.error);
-
-    const {
-        stats,
-        types,
-        height,
-        weight,
-        order,
-        name,
-    } = data;
-
-    const pokemonType = types.map(({ slot, type }) => ({
-        order: slot,
-        type: type.name
-    }));
-
-    console.log('pokemon_types');
-    console.log(pokemonType);
-    console.log('==============================');
-
-    const pokemonStatus = stats
-        .map(({ stat, base_stat }) => {
-            return {
-                [stat.name]: base_stat
-            }
-        })
-        .reduce((a, c) => Object.assign(a, c), { pokemonId: 1 });
-
-    console.log('status');
-    console.log(pokemonStatus);
-    console.log('==============================');
-
-    const pokemon = {
-        pokemonId,
-        height,
-        weight,
-        order,
-        name
-    }
-
-    console.log('pokemons');
-    console.log(pokemon);
-    console.log('==============================');
-}
-
-const region = async () => {
+const regions = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/region';
 
     const { data } = await axios
         .get(apiUrl)
         .catch(console.error);
 
-    const result = await axios.get(data.results[0].url).catch(console.error);
-    console.log(result.data);
+    const results = await Promise.all(
+        data.results.map(async result => {
+            const { data } = await axios.get(result.url).catch(console.error);
 
-    // const results = await Promise.all(
-    //     data.results.map(async result => {
-    //         const { data } = await axios.get(result.url).catch(console.error);
-    //         const { id, name, names } = data;
+            // TODO locations も管理したい
+            const { id, name, names } = data;
 
-    //         const types = names.map(({ language, name }) => ({
-    //             typeGroupId: id,
-    //             name,
-    //             language: language.name
-    //         }));
+            const regions = names.map(({ language, name }) => ({
+                regionGroupId: id,
+                name,
+                language: language.name
+            }));
 
-    //         return {
-    //             typeGroups: {
-    //                 id,
-    //                 name
-    //             },
-    //             types
-    //         };
-    //     })
-    // );
+            return {
+                regionGroups: {
+                    id,
+                    name
+                },
+                regions
+            };
+        })
+    );
 
-    // const [typeGroups, types] = results.reduce((a, c) => {
-    //     const [AccumulatorTypeGroups, AccumulatorTypes] = a;
-    //     const { typeGroups, types } = c;
+    const [regionGroups, regions] = results.reduce((a, c) => {
+        const [AccumulatorRegionGroups, AccumulatorRegions] = a;
+        const { regionGroups, regions } = c;
 
-    //     AccumulatorTypeGroups.push(typeGroups);
+        AccumulatorRegionGroups.push(regionGroups);
 
-    //     return [
-    //         AccumulatorTypeGroups,
-    //         AccumulatorTypes.concat(types)
-    //     ];
-    // }, [[], []]);
+        return [
+            AccumulatorRegionGroups,
+            AccumulatorRegions.concat(regions)
+        ];
+    }, [[], []]);
 
-    // console.log('typeGroups');
-    // console.log(typeGroups);
-    // console.log('==============================');
-    // console.log('types');
-    // console.log(types);
-    // console.log('==============================');
+    console.log('regionGroups');
+    console.log(regionGroups);
+    console.log('==============================');
+    console.log('regions');
+    console.log(regions);
+    console.log('==============================');
 }
 
 (async () => {
-    // await species();
     // await gameVersions();
     // await languages();
     // await types();
-    // await pokemons();
-    await region();
+    await pokemons();
+    // await regions();
 })();
