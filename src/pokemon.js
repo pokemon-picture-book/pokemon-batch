@@ -12,10 +12,10 @@ const GENERATIONS = Object.freeze([
 
 const pokemons = async () => {
     const pokemonId = 1;
-    const apiUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
+    const apiSpeciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
 
-    const { data } = await axios
-        .get(apiUrl)
+    const { data: speciesData } = await axios
+        .get(apiSpeciesUrl)
         .catch(console.error);
 
     const {
@@ -23,7 +23,7 @@ const pokemons = async () => {
         genera,
         names,
         color
-    } = data;
+    } = speciesData;
 
     const pokemonFlavorTextEntries = flavor_text_entries.map(({ flavor_text, language, version }) => ({
         pokemonId,
@@ -54,10 +54,10 @@ const pokemons = async () => {
     console.log('==============================');
 
 
-    const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+    const apiPokemonUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
 
-    const { data } = await axios
-        .get(apiUrl)
+    const { data: pokemonData } = await axios
+        .get(apiPokemonUrl)
         .catch(console.error);
 
     const {
@@ -66,8 +66,7 @@ const pokemons = async () => {
         height,
         weight,
         order,
-        name,
-    } = data;
+    } = pokemonData;
 
     const pokemonType = types.map(({ slot, type }) => ({
         order: slot,
@@ -99,8 +98,7 @@ const pokemons = async () => {
         height,
         weight,
         order,
-        name,
-        imageColor: color,
+        imageColor: color.name,
         generationNo
     }
 
