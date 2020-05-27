@@ -277,10 +277,19 @@ const regions = async () => {
     console.log('==============================');
 }
 
+const evolution = async () => {
+    const pokemonId = 1;
+    const apiUrl = 'https://pokeapi.co/api/v2/evolution-chain';
+
+    const { data } = await axios.get(`${apiUrl}/${pokemonId}`).catch(console.error);
+    console.log(data)
+}
+
 (async () => {
     // await gameVersions();
     // await languages();
     // await types();
-    await pokemons();
+    // await pokemons();
     // await regions();
+    await evolution();
 })();
