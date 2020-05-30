@@ -10,7 +10,13 @@ const GENERATIONS = Object.freeze([
     { generationNo: 7, s: 721, e: 809 }
 ]);
 
-const pokemons = async () => {
+const getLangId = (languages, language) =>
+    languages.find(({ name }) => name === language.name).id;
+
+const getGameVersionGroupId = (gameVersionGroups, gameVersionGroup) =>
+    gameVersionGroups.find(({ name }) => name === gameVersionGroup.name).id;
+
+const pokemons = async (languages, gameVersionGroups) => {
     const pokemonId = 1;
     const apiSpeciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
 
@@ -28,8 +34,8 @@ const pokemons = async () => {
     const pokemonFlavorTextEntries = flavor_text_entries.map(({ flavor_text, language, version }) => ({
         pokemonId,
         flavorText: flavor_text,
-        language: language.name,
-        version: version.name
+        languageId: getLangId(languages, language),
+        gameVersionGroupId: getGameVersionGroupId(gameVersionGroups, version)
     }));
     console.log('flavor_text_entries');
     console.log(pokemonFlavorTextEntries);
@@ -37,7 +43,7 @@ const pokemons = async () => {
 
     const pokemonGeneras = genera.map(({ language, genus }) => ({
         pokemonId,
-        language: language.name,
+        languageId: getLangId(languages, language),
         genus
     }));
     console.log('generas');
@@ -46,7 +52,7 @@ const pokemons = async () => {
 
     const pokemonLangNames = names.map(({ language, name }) => ({
         pokemonId,
-        language: language.name,
+        languageId: getLangId(languages, language),
         name
     }));
     console.log('names');
@@ -105,16 +111,25 @@ const pokemons = async () => {
     console.log('pokemons');
     console.log(pokemon);
     console.log('==============================');
+
+    return {
+        pokemonFlavorTextEntries,
+        pokemonGeneras,
+        pokemonLangNames,
+        pokemonType,
+        pokemonStatus,
+        pokemon
+    };
 }
 
-const gameVersions = async () => {
+const gameVersions = async (languages) => {
     const apiUrl = 'https://pokeapi.co/api/v2/version';
 
     const { data } = await axios
         .get(apiUrl)
         .catch(console.error);
 
-    const gameVersions = await Promise.all(
+    const gameVersionObj = await Promise.all(
         [...Array(data.count)].map(async (_, i) => {
             const { data } = await axios
                 .get(`${apiUrl}/${i + 1}`)
@@ -122,41 +137,46 @@ const gameVersions = async () => {
 
             const { id, name, names } = data;
 
-            const gameVersionLangs = names.map(({ language, name }) => ({
-                gameVersionId: id,
+            const gameVersions = names.map(({ language, name }) => ({
+                gameVersionGroupId: id,
                 name,
-                language: language.name
+                languageId: getLangId(languages, language),
             }));
 
             return {
-                gameVersion: {
+                gameVersionGroup: {
                     id,
                     name
                 },
-                gameVersionLangs
+                gameVersions
             }
         })
     );
 
-    const [gameVersion, gameVersionLangs] = gameVersions.reduce((a, c) => {
+    const [gameVersionGroups, gameVersions] = gameVersionObj.reduce((a, c) => {
         const [AccumulatorGameVersion, AccumulatorGameVersionLangs] = a;
-        const { gameVersion, gameVersionLangs } = c;
+        const { gameVersionGroup, gameVersions } = c;
 
-        AccumulatorGameVersion.push(gameVersion);
+        AccumulatorGameVersion.push(gameVersionGroup);
 
         return [
             AccumulatorGameVersion,
-            AccumulatorGameVersionLangs.concat(gameVersionLangs)
+            AccumulatorGameVersionLangs.concat(gameVersions)
         ];
     }, [[], []]);
 
     console.log('game_version_groups');
-    console.log(gameVersion);
+    console.log(gameVersionGroups);
     console.log('==============================');
 
     console.log('game_versions');
-    console.log(gameVersionLangs);
+    console.log(gameVersions);
     console.log('==============================');
+
+    return {
+        gameVersionGroups,
+        gameVersions
+    };
 }
 
 const languages = () => {
@@ -177,9 +197,11 @@ const languages = () => {
     console.log('language');
     console.log(languages);
     console.log('==============================');
+
+    return languages;
 }
 
-const types = async () => {
+const types = async (languages) => {
     const apiUrl = 'https://pokeapi.co/api/v2/type';
 
     const { data } = await axios
@@ -194,7 +216,7 @@ const types = async () => {
             const types = names.map(({ language, name }) => ({
                 typeGroupId: id,
                 name,
-                language: language.name
+                languageId: getLangId(languages, language),
             }));
 
             return {
@@ -225,9 +247,14 @@ const types = async () => {
     console.log('types');
     console.log(types);
     console.log('==============================');
+
+    return {
+        typeGroups,
+        types
+    }
 }
 
-const regions = async () => {
+const regions = async (languages) => {
     const apiUrl = 'https://pokeapi.co/api/v2/region';
 
     const { data } = await axios
@@ -244,7 +271,7 @@ const regions = async () => {
             const regions = names.map(({ language, name }) => ({
                 regionGroupId: id,
                 name,
-                language: language.name
+                languageId: getLangId(languages, language),
             }));
 
             return {
@@ -275,6 +302,11 @@ const regions = async () => {
     console.log('regions');
     console.log(regions);
     console.log('==============================');
+
+    return {
+        regionGroups,
+        regions
+    }
 }
 
 // 進化情報に関する情報をまとめる
@@ -285,6 +317,7 @@ const regions = async () => {
 // 44, 45, leaf-stone, use-item
 const evolution = async () => {
     // const evolutionId = 214; // ミツハニー
+    // const evolutionId = 200; // レックウザ
     const evolutionId = 67; // イーブイ
     // const evolutionId = 1; // フシギダネ
     // const evolutionId = 18; // クサイ花
@@ -294,7 +327,13 @@ const evolution = async () => {
     const { id, chain } = data;
     const { evolves_to, species } = chain;
 
-    const getPokemonId = ({ url }) => url.split('/').filter(specie => !!specie).pop();
+    const getPokemonId = ({ url }) => {
+        const pokemonIdStr = url.split('/').filter(specie => !!specie).pop();
+        if (isNaN(pokemonIdStr)) {
+            throw new Error('pokemon id is NaN');
+        }
+        return Number(pokemonIdStr);
+    };
 
     const getEvolution = (from, to) => {
         const evolutions = to.evolution_details.map(detail => {
@@ -333,13 +372,14 @@ const evolution = async () => {
     }, []);
 
     console.log(results);
+    return results;
 }
 
 (async () => {
-    // await gameVersions();
-    // await languages();
-    // await types();
-    // await pokemons();
-    // await regions();
+    const langObj = languages();
+    const gameVersionObj = await gameVersions(langObj);
+    await pokemons(langObj, gameVersionObj.gameVersionGroups);
+    await types(langObj);
+    await regions(langObj);
     await evolution();
 })();
