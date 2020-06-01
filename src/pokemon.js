@@ -10,13 +10,36 @@ const GENERATIONS = Object.freeze([
     { generationNo: 7, s: 721, e: 809 }
 ]);
 
-const getLangId = (languages, language) =>
-    languages.find(({ name }) => name === language.name).id;
+const languages = () => {
+    // const languages = [
+    //     { id: 1, name: 'zh-Hans' },
+    //     { id: 2, name: 'ja' },
+    //     { id: 3, name: 'en' },
+    //     { id: 4, name: 'it' },
+    //     { id: 5, name: 'es' },
+    //     { id: 6, name: 'de' },
+    //     { id: 7, name: 'fr' },
+    //     { id: 8, name: 'zh-Hant' },
+    //     { id: 9, name: 'ko' },
+    //     { id: 10, name: 'roomaji' },
+    //     { id: 11, name: 'ja-Hrkt' },
+    // ];
+    const languages = [
+        { id: 1, name: 'ja-Hrkt' },
+        { id: 2, name: 'en' }
+    ];
 
-const getGameVersionGroupId = (gameVersionGroups, gameVersionGroup) =>
-    gameVersionGroups.find(({ name }) => name === gameVersionGroup.name).id;
+    return languages;
+}
 
-const pokemons = async (languages, gameVersionGroups) => {
+const getLangId = (language) =>
+    languages().find(({ name }) => name === language.name).id;
+
+const filterLang = ({ language }) => {
+    return languages().map(lang => lang.name).includes(language.name);
+};
+
+const pokemons = async () => {
     const pokemonId = 1;
     const apiSpeciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
 
@@ -31,28 +54,35 @@ const pokemons = async (languages, gameVersionGroups) => {
         color
     } = speciesData;
 
-    const pokemonFlavorTextEntries = flavor_text_entries.map(({ flavor_text, language, version }) => ({
+    const pokemonFlavorTextEntries = flavor_text_entries
+        // x バージョンのみのデータを取得する（日本語がある最新のバージョンのため）
+        .filter(({ language, version }) => version.name === 'x' && filterLang({ language }))
+        .map(({ flavor_text, language, version }) => ({
         pokemonId,
         flavorText: flavor_text,
-        languageId: getLangId(languages, language),
-        gameVersionGroupId: getGameVersionGroupId(gameVersionGroups, version)
+            languageId: getLangId(language),
+            version
     }));
     console.log('flavor_text_entries');
     console.log(pokemonFlavorTextEntries);
     console.log('==============================');
 
-    const pokemonGeneras = genera.map(({ language, genus }) => ({
+    const pokemonGeneras = genera
+        .filter(filterLang)
+        .map(({ language, genus }) => ({
         pokemonId,
-        languageId: getLangId(languages, language),
+            languageId: getLangId(language),
         genus
     }));
     console.log('generas');
     console.log(pokemonGeneras);
     console.log('==============================');
 
-    const pokemonLangNames = names.map(({ language, name }) => ({
+    const pokemonLangNames = names
+        .filter(filterLang)
+        .map(({ language, name }) => ({
         pokemonId,
-        languageId: getLangId(languages, language),
+            languageId: getLangId(language),
         name
     }));
     console.log('names');
@@ -122,7 +152,7 @@ const pokemons = async (languages, gameVersionGroups) => {
     };
 }
 
-const gameVersions = async (languages) => {
+const gameVersions = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/version';
 
     const { data } = await axios
@@ -137,71 +167,57 @@ const gameVersions = async (languages) => {
 
             const { id, name, names } = data;
 
-            const gameVersions = names.map(({ language, name }) => ({
-                gameVersionGroupId: id,
+            const gameVersionNames = names
+                .filter(filterLang)
+                .map(({ language, name }) => ({
+                    gameVersionId: id,
                 name,
-                languageId: getLangId(languages, language),
+                    languageId: getLangId(language),
             }));
 
             return {
-                gameVersionGroup: {
+                gameVersion: {
                     id,
                     name
                 },
-                gameVersions
+                gameVersionNames
             }
         })
     );
 
-    const [gameVersionGroups, gameVersions] = gameVersionObj.reduce((a, c) => {
-        const [AccumulatorGameVersion, AccumulatorGameVersionLangs] = a;
-        const { gameVersionGroup, gameVersions } = c;
+    const [gameVersionTmps, gameVersionNames] = gameVersionObj.reduce((a, c) => {
+        const [AccumulatorGameVersions, AccumulatorGameVersionNames] = a;
+        const { gameVersion, gameVersionNames } = c;
 
-        AccumulatorGameVersion.push(gameVersionGroup);
+        AccumulatorGameVersions.push(gameVersion);
 
         return [
-            AccumulatorGameVersion,
-            AccumulatorGameVersionLangs.concat(gameVersions)
+            AccumulatorGameVersions,
+            AccumulatorGameVersionNames.concat(gameVersionNames)
         ];
     }, [[], []]);
 
-    console.log('game_version_groups');
-    console.log(gameVersionGroups);
-    console.log('==============================');
+    const gameVersions = gameVersionTmps.map(gameVersion => ({
+        ...gameVersion,
+        gameVersionGroupId: gameVersionGroups.findIndex(gameVersionGroup =>
+            gameVersionGroup.includes(gameVersion.name)) + 1
+    }));
 
     console.log('game_versions');
     console.log(gameVersions);
     console.log('==============================');
 
+    console.log('game_version_names');
+    console.log(gameVersionNames);
+    console.log('==============================');
+
     return {
-        gameVersionGroups,
-        gameVersions
+        gameVersions,
+        gameVersionNames
     };
 }
 
-const languages = () => {
-    const languages = [
-        { id: 1, name: 'zh-Hans' },
-        { id: 2, name: 'ja' },
-        { id: 3, name: 'en' },
-        { id: 4, name: 'it' },
-        { id: 5, name: 'es' },
-        { id: 6, name: 'de' },
-        { id: 7, name: 'fr' },
-        { id: 8, name: 'zh-Hant' },
-        { id: 9, name: 'ko' },
-        { id: 10, name: 'roomaji' },
-        { id: 11, name: 'ja-Hrkt' },
-    ];
-
-    console.log('language');
-    console.log(languages);
-    console.log('==============================');
-
-    return languages;
-}
-
-const types = async (languages) => {
+const types = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/type';
 
     const { data } = await axios
@@ -213,10 +229,12 @@ const types = async (languages) => {
             const { data } = await axios.get(result.url).catch(console.error);
             const { id, name, names } = data;
 
-            const types = names.map(({ language, name }) => ({
+            const types = names
+                .filter(filterLang)
+                .map(({ language, name }) => ({
                 typeGroupId: id,
                 name,
-                languageId: getLangId(languages, language),
+                    languageId: getLangId(language),
             }));
 
             return {
@@ -254,7 +272,7 @@ const types = async (languages) => {
     }
 }
 
-const regions = async (languages) => {
+const regions = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/region';
 
     const { data } = await axios
@@ -268,10 +286,12 @@ const regions = async (languages) => {
             // TODO locations も管理したい
             const { id, name, names } = data;
 
-            const regions = names.map(({ language, name }) => ({
+            const regions = names
+                .filter(filterLang)
+                .map(({ language, name }) => ({
                 regionGroupId: id,
                 name,
-                languageId: getLangId(languages, language),
+                    languageId: getLangId(language),
             }));
 
             return {
@@ -376,10 +396,11 @@ const evolution = async () => {
 }
 
 (async () => {
-    const langObj = languages();
-    const gameVersionObj = await gameVersions(langObj);
-    await pokemons(langObj, gameVersionObj.gameVersionGroups);
-    await types(langObj);
-    await regions(langObj);
-    await evolution();
+    // languages();
+    await gameVersions();
+    await pokemons();
+    await types();
+    await regions();
+    // await evolution();
+    // pokemonImages();
 })();
