@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "image": "nohup node src/pokemon-image.js &"
+    "image": "nohup sh pokemon-image.sh &",
   },
   "keywords": [],
   "author": "",
