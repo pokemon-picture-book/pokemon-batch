@@ -72,6 +72,10 @@ const imageDownload = () => {
         throw new Error('コマンドライン引数を指定してください。');
     }
 
+    if (POKEMON_ID > 721) {
+        throw new Error('指定されたポケモンIDはサポートされていません');
+    }
+
     clientSetup();
     imageDownload();
 })();
