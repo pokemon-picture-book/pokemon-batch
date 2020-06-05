@@ -2,5 +2,5 @@
 
 for i in `seq 721`
 do
-    node src/pokemon-image.js $i
+    node src/pokemon-image $i
 done
