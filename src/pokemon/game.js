@@ -63,11 +63,6 @@ exports.gameVersionGroups = Object.freeze([
         groups: ['x', 'y']
     },
     {
-        id: 12,
-        alias: 'action',
-        groups: []
-    },
-    {
         id: 13,
         alias: 'oras',
         groups: ['omega-ruby', 'alpha-sapphire']
