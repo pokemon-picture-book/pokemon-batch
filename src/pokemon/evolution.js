@@ -81,8 +81,6 @@ exports.evolutions = async () => {
             return a.concat(getEvolution(id, species, c));
         }, []);
 
-        console.log(`${evolutionId}: done`);
-
         evolutions = evolutions.concat(results);
     }
 
