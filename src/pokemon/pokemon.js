@@ -1,9 +1,6 @@
 const axios = require('axios');
 const { getLangId, filterLang } = require('./language');
-
-const POKEMON_IDS = Object.freeze(
-    [...Array(721)].map((_, i) => i + 1)
-);
+const { toJSON } = require('./output');
 
 const GENERATIONS = Object.freeze([
     { generationNo: 1, s: 0, e: 151 },
@@ -31,9 +28,6 @@ const species = (
             flavorText: flavor_text,
             languageId: getLangId(language)
         }));
-    console.log('flavor_text_entries');
-    console.log(pokemonFlavorTextEntries);
-    console.log('==============================');
 
     const pokemonGeneras = genera
         .filter(filterLang)
@@ -42,9 +36,6 @@ const species = (
             languageId: getLangId(language),
             genus
         }));
-    console.log('generas');
-    console.log(pokemonGeneras);
-    console.log('==============================');
 
     const pokemonLangNames = names
         .filter(filterLang)
@@ -53,9 +44,12 @@ const species = (
             languageId: getLangId(language),
             name
         }));
-    console.log('names');
-    console.log(pokemonLangNames);
-    console.log('==============================');
+
+    return {
+        pokemonFlavorTextEntries,
+        pokemonGeneras,
+        pokemonLangNames
+    };
 }
 
 const pokemonDetails = (
@@ -66,18 +60,15 @@ const pokemonDetails = (
         height,
         weight,
         order,
+        typeGroups,
         color
     }
 ) =>  {
     const pokemonType = types.map(({ slot, type }) => ({
         pokemonId,
         order: slot,
-        type: type.name
+        typeId: typeGroups.find(typeGroup => typeGroup.name === type.name).id
     }));
-
-    console.log('pokemon_types');
-    console.log(pokemonType);
-    console.log('==============================');
 
     const pokemonStatus = stats
         .map(({ stat, base_stat }) => {
@@ -86,10 +77,6 @@ const pokemonDetails = (
             }
         })
         .reduce((a, c) => Object.assign(a, c), { pokemonId: 1 });
-
-    console.log('status');
-    console.log(pokemonStatus);
-    console.log('==============================');
 
     const { generationNo } = GENERATIONS.find(
         g => g.s < pokemonId && pokemonId <= g.e
@@ -101,12 +88,8 @@ const pokemonDetails = (
         weight,
         order,
         imageColor: color.name,
-        generationNo
+        regionId: generationNo
     }
-
-    console.log('pokemons');
-    console.log(pokemon);
-    console.log('==============================');
 
     return {
         pokemonType,
@@ -115,24 +98,59 @@ const pokemonDetails = (
     };
 }
 
-exports.pokemons = async () => {
-    const pokemonId = 1;
-    const apiSpeciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
+exports.POKEMON_IDS = Object.freeze(
+    [...Array(721)].map((_, i) => i + 1)
+);
 
-    const { data: specieData } = await axios
-        .get(apiSpeciesUrl)
-        .catch(console.error);
+exports.pokemons = async (typeGroups) => {
+    let flavorTextEntries = [];
+    let generas = [];
+    let langNames = [];
+    let pokemonTypes = [];
+    const status = [];
+    const pokemons = [];
 
-    species(pokemonId, specieData);
+    for(const pokemonId of this.POKEMON_IDS) {
+        const apiSpeciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
 
-    const apiPokemonUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+        const { data: specieData } = await axios
+            .get(apiSpeciesUrl)
+            .catch(console.error);
 
-    const { data: pokemonData } = await axios
-        .get(apiPokemonUrl)
-        .catch(console.error);
+        const {
+            pokemonFlavorTextEntries,
+            pokemonGeneras,
+            pokemonLangNames
+        } = species(pokemonId, specieData);
 
-    pokemonDetails(pokemonId, {
-        ...pokemonData,
-        color: specieData.color
-    });
+        const apiPokemonUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+
+        const { data: pokemonData } = await axios
+            .get(apiPokemonUrl)
+            .catch(console.error);
+
+        const {
+            pokemonType,
+            pokemonStatus,
+            pokemon
+        } = pokemonDetails(pokemonId, {
+            ...pokemonData,
+            typeGroups,
+            color: specieData.color
+        });
+
+        flavorTextEntries = flavorTextEntries.concat(pokemonFlavorTextEntries);
+        generas = generas.concat(pokemonGeneras);
+        langNames = langNames.concat(pokemonLangNames);
+        pokemonTypes = pokemonTypes.concat(pokemonType);
+        status.push(pokemonStatus);
+        pokemons.push(pokemon);
+    }
+
+    toJSON(flavorTextEntries, 'flavor-text-entries');
+    toJSON(generas, 'generas');
+    toJSON(langNames, 'pokemon-names');
+    toJSON(pokemonTypes, 'pokemon-types');
+    toJSON(status, 'status');
+    toJSON(pokemons, 'pokemons');
 }

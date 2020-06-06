@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { getLangId, filterLang } = require('./language');
+const { toJSON } = require('./output');
 
 exports.types = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/type';
@@ -13,7 +14,7 @@ exports.types = async () => {
             const { data } = await axios.get(result.url).catch(console.error);
             const { id, name, names } = data;
 
-            const types = names
+            const typeNames = names
                 .filter(filterLang)
                 .map(({ language, name }) => ({
                     typeGroupId: id,
@@ -22,36 +23,32 @@ exports.types = async () => {
                 }));
 
             return {
-                typeGroups: {
+                type: {
                     id,
                     name
                 },
-                types
+                typeNames
             };
         })
     );
 
-    const [typeGroups, types] = results.reduce((a, c) => {
-        const [AccumulatorTypeGroups, AccumulatorTypes] = a;
-        const { typeGroups, types } = c;
+    const [types, typeNames] = results.reduce((a, c) => {
+        const [AccumulatorTypes, AccumulatorTypeNames] = a;
+        const { type, typeNames } = c;
 
-        AccumulatorTypeGroups.push(typeGroups);
+        AccumulatorTypes.push(type);
 
         return [
-            AccumulatorTypeGroups,
-            AccumulatorTypes.concat(types)
+            AccumulatorTypes,
+            AccumulatorTypeNames.concat(typeNames)
         ];
     }, [[], []]);
 
-    console.log('typeGroups');
-    console.log(typeGroups);
-    console.log('==============================');
-    console.log('types');
-    console.log(types);
-    console.log('==============================');
+    toJSON(types, 'types');
+    toJSON(typeNames, 'type-names');
 
     return {
-        typeGroups,
-        types
+        types,
+        typeNames
     }
 }

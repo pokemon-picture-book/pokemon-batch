@@ -1,4 +1,6 @@
-exports.languages = () => {
+const { toJSON } = require('./output');
+
+const getLanguages = () => {
     // const languages = [
     //     { id: 1, name: 'zh-Hans' },
     //     { id: 2, name: 'ja' },
@@ -12,16 +14,19 @@ exports.languages = () => {
     //     { id: 10, name: 'roomaji' },
     //     { id: 11, name: 'ja-Hrkt' },
     // ];
-    const languages = [
+
+    return [
         { id: 1, name: 'ja-Hrkt' },
         { id: 2, name: 'en' }
     ];
+}
 
-    return languages;
+exports.languages = () => {
+    toJSON(getLanguages(), 'languages');
 }
 
 exports.getLangId = (language) =>
-    this.languages().find(({ name }) => name === language.name).id;
+    getLanguages().find(({ name }) => name === language.name).id;
 
 exports.filterLang = ({ language }) =>
-    this.languages().map(lang => lang.name).includes(language.name);
+    getLanguages().map(lang => lang.name).includes(language.name);

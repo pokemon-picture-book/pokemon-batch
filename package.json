@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "image": "nohup sh pokemon-image.sh &",
+    "pokemon": "nohup node src/pokemon &"
   },
   "keywords": [],
   "author": "",

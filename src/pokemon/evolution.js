@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { toJSON } = require('./output');
 
 const getPokemonId = ({ url }) => {
     const pokemonIdStr = url.split('/').filter(specie => !!specie).pop();
@@ -34,7 +35,7 @@ const getEvolution = (id, from, to) => {
 
     if (to.evolves_to.length) {
         return evolutions
-            .concat(to.evolves_to.map(ee => getEvolution(to.species, ee)))
+            .concat(to.evolves_to.map(ee => getEvolution(id, to.species, ee)))
             .flat();
     }
     return evolutions;
@@ -50,19 +51,40 @@ exports.evolutions = async () => {
     // ===== MAX CHAIN ID 419 =====
     // const evolutionId = 214; // ミツハニー
     // const evolutionId = 200; // レックウザ
-    const evolutionId = 67; // イーブイ
+    // const evolutionId = 67; // イーブイ
     // const evolutionId = 1; // フシギダネ
     // const evolutionId = 18; // クサイ花
     const apiUrl = 'https://pokeapi.co/api/v2/evolution-chain';
 
-    const { data } = await axios.get(`${apiUrl}/${evolutionId}`).catch(console.error);
-    const { id, chain } = data;
-    const { evolves_to, species } = chain;
+    let evolutions = [];
 
-    const results = evolves_to.reduce((a, c) => {
-        return a.concat(getEvolution(id, species, c));
-    }, []);
+    const evolutionIds = [...Array(419)].map((_, i) => i + 1);
+    for (const evolutionId of evolutionIds) {
+        const { data } = await axios
+            .get(`${apiUrl}/${evolutionId}`)
+            .catch(err => {
+                const { status } = err.response;
+                if (status !== 404) {
+                    throw err;
+                }
+                return { data: null }
+            });
 
-    console.log(results);
-    return results;
+        if (!data) {
+            continue;
+        }
+
+        const { id, chain } = data;
+        const { evolves_to, species } = chain;
+
+        const results = evolves_to.reduce((a, c) => {
+            return a.concat(getEvolution(id, species, c));
+        }, []);
+
+        console.log(`${evolutionId}: done`);
+
+        evolutions = evolutions.concat(results);
+    }
+
+    toJSON(evolutions, 'evolutions');
 }

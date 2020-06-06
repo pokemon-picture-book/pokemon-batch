@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { getLangId, filterLang } = require('./language');
+const { toJSON } = require('./output');
 
 exports.regions = async () => {
     const apiUrl = 'https://pokeapi.co/api/v2/region';
@@ -15,7 +16,7 @@ exports.regions = async () => {
             // TODO locations も管理したい
             const { id, name, names } = data;
 
-            const regions = names
+            const regionNames = names
                 .filter(filterLang)
                 .map(({ language, name }) => ({
                     regionGroupId: id,
@@ -24,36 +25,32 @@ exports.regions = async () => {
                 }));
 
             return {
-                regionGroups: {
+                regions: {
                     id,
                     name
                 },
-                regions
+                regionNames
             };
         })
     );
 
-    const [regionGroups, regions] = results.reduce((a, c) => {
-        const [AccumulatorRegionGroups, AccumulatorRegions] = a;
-        const { regionGroups, regions } = c;
+    const [regions, regionNames] = results.reduce((a, c) => {
+        const [AccumulatorRegions, AccumulatorRegionNames] = a;
+        const { regions, regionNames } = c;
 
-        AccumulatorRegionGroups.push(regionGroups);
+        AccumulatorRegions.push(regions);
 
         return [
-            AccumulatorRegionGroups,
-            AccumulatorRegions.concat(regions)
+            AccumulatorRegions,
+            AccumulatorRegionNames.concat(regionNames)
         ];
     }, [[], []]);
 
-    console.log('regionGroups');
-    console.log(regionGroups);
-    console.log('==============================');
-    console.log('regions');
-    console.log(regions);
-    console.log('==============================');
+    toJSON(regions, 'regions');
+    toJSON(regionNames, 'region-names');
 
     return {
-        regionGroups,
-        regions
+        regions,
+        regionNames
     }
 }
