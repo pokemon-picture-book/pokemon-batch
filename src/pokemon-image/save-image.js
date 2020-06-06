@@ -7,7 +7,7 @@ const makeDir = (dir) => {
     return dir;
 };
 
-exports.save = (stream, pokemonNo, targetDir = '.') => {
+exports.save = (stream, targetDir = '.') => {
     const { path } = stream.url;
     const pathParts = path.split('/').filter(p => !!p && p !== 'material');
     const fileName = pathParts.pop();
@@ -16,13 +16,12 @@ exports.save = (stream, pokemonNo, targetDir = '.') => {
         return stream.end();
     }
 
-    const imageDir = makeDir(`${targetDir}/imgTmp`);
-    const pokemonImageDir = makeDir(`${imageDir}/${pokemonNo}`);
-
-    const savedDir = pathParts.reduce((a, c) => {
+    const savedDirParts = targetDir.split('/').concat(pathParts);
+    const firstSavedDirPart = savedDirParts.shift();
+    const savedDir = savedDirParts.reduce((a, c) => {
         const subDir = makeDir(`${a}/${c}`);
         return subDir;
-    }, pokemonImageDir);
+    }, firstSavedDirPart);
 
     stream.toBuffer((_, buffer) => {
         fs.writeFileSync(`${savedDir}/${fileName}`, buffer, 'binary');

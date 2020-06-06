@@ -1,10 +1,10 @@
 const client = require('cheerio-httpcli');
 const { save } = require('./save-image');
 
-exports.clientSetup = (pokemonNo, targetDir) => {
+exports.clientSetup = (targetDir) => {
     client.download
         .on('ready', (stream) => {
-            save(stream, pokemonNo, targetDir);
+            save(stream, targetDir);
         })
         .on('error', (err) => {
             console.error(err.url + 'をダウンロードできませんでした: ' + err.message);
@@ -16,8 +16,8 @@ exports.clientSetup = (pokemonNo, targetDir) => {
     client.download.parallel = 5;
 }
 
-exports.imageDownload = (pokemonNo) => {
-    const { $, error } = client.fetchSync(`http://hikochans.com/pixelart/pokemon/${pokemonNo}`);
+exports.imageDownload = (pokemonNo, unown = '') => {
+    const { $, error } = client.fetchSync(`http://hikochans.com/pixelart/pokemon/${pokemonNo}${unown}`);
     if (error) {
         throw error;
     }
