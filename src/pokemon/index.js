@@ -7,17 +7,17 @@ const { regions } = require('./region');
 const { images } = require('./image');
 
 (async () => {
-    // languages();
+    languages();
 
-    // images();
+    images();
 
-    // await games();
+    await games();
 
-    // const typeData = await types();
+    const typeData = await types();
 
-    // await pokemons(typeData.types);
+    await pokemons(typeData.types);
 
-    // await regions();
+    await regions();
 
     await evolutions();
 })();
