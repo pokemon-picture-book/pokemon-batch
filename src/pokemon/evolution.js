@@ -14,7 +14,7 @@ const getEvolution = (id, from, to) => {
         const { trigger, ...itemObj } = detail;
 
         const evolution = {
-            pokemon_evolution_id: id,
+            pokemonEvolutionId: id,
             fromId: getPokemonId(from),
             toId: getPokemonId(to.species),
             trigger: trigger.name
@@ -27,7 +27,7 @@ const getEvolution = (id, from, to) => {
 
                 delete itemObj[key]['url'];
 
-                Object.assign(evolution, { [`detail_${detailIndex}`]: JSON.stringify({ [key]: itemObj[key] }) });
+                Object.assign(evolution, { [`detail${detailIndex}`]: JSON.stringify({ [key]: itemObj[key] }) });
             }
         });
         return evolution;
@@ -85,4 +85,6 @@ exports.evolutions = async () => {
     }
 
     toJSON(evolutions, 'evolutions');
+
+    return evolutions;
 }

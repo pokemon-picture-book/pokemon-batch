@@ -15,9 +15,9 @@ const { images } = require('./image');
 
     const typeData = await types();
 
-    await pokemons(typeData.types);
+    const evolutionData = await evolutions();
+
+    await pokemons(typeData.types, evolutionData);
 
     await regions();
-
-    await evolutions();
 })();

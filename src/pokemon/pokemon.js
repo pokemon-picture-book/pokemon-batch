@@ -61,6 +61,7 @@ const pokemonDetails = (
         weight,
         order,
         typeGroups,
+        evolutions,
         color
     }
 ) =>  {
@@ -72,8 +73,14 @@ const pokemonDetails = (
 
     const pokemonStatus = stats
         .map(({ stat, base_stat }) => {
+            let key = stat.name;
+            if (key === 'special-attack') {
+                key = 'specialAttack';
+            } else if (key === 'special-defense') {
+                key = 'specialDefense';
+            }
             return {
-                [stat.name]: base_stat
+                [key]: base_stat
             }
         })
         .reduce((a, c) => Object.assign(a, c), { pokemonId: 1 });
@@ -82,13 +89,19 @@ const pokemonDetails = (
         g => g.s < pokemonId && pokemonId <= g.e
     );
 
+    const pokemonEvolution = evolutions.find(evolution => {
+        const { fromId, toId } = evolution;
+        return fromId === pokemonId || toId === pokemonId;
+    });
+
     const pokemon = {
         id: pokemonId,
         height,
         weight,
         order,
         imageColor: color.name,
-        regionId: generationNo
+        regionId: generationNo,
+        pokemonEvolutionId: pokemonEvolution?.pokemonEvolutionId || null
     }
 
     return {
@@ -102,7 +115,7 @@ exports.POKEMON_IDS = Object.freeze(
     [...Array(721)].map((_, i) => i + 1)
 );
 
-exports.pokemons = async (typeGroups) => {
+exports.pokemons = async (typeGroups, evolutions) => {
     let flavorTextEntries = [];
     let generas = [];
     let langNames = [];
@@ -136,6 +149,7 @@ exports.pokemons = async (typeGroups) => {
         } = pokemonDetails(pokemonId, {
             ...pokemonData,
             typeGroups,
+            evolutions,
             color: specieData.color
         });
 
