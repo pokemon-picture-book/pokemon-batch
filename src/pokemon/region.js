@@ -19,7 +19,7 @@ exports.regions = async () => {
             const regionNames = names
                 .filter(filterLang)
                 .map(({ language, name }) => ({
-                    regionGroupId: id,
+                    regionId: id,
                     name,
                     languageId: getLangId(language),
                 }));
