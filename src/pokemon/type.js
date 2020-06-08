@@ -17,7 +17,7 @@ exports.types = async () => {
             const typeNames = names
                 .filter(filterLang)
                 .map(({ language, name }) => ({
-                    typeGroupId: id,
+                    typeId: id,
                     name,
                     languageId: getLangId(language),
                 }));
