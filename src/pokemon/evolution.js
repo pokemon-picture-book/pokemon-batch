@@ -83,7 +83,12 @@ exports.evolutions = async () => {
         evolutions = evolutions.concat(results);
     }
 
-    toJSON(evolutions, 'evolutions');
+    const evolutionData = evolutions.map((evolution, i) => ({
+        id: i + 1,
+        ...evolution
+    }))
 
-    return evolutions;
+    toJSON(evolutionData, 'evolutions');
+
+    return evolutionData;
 }
