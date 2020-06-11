@@ -9,12 +9,11 @@ const getPokemonId = ({ url }) => {
     return Number(pokemonIdStr);
 };
 
-const getEvolution = (id, from, to) => {
+const getEvolution = (from, to) => {
     const evolutions = to.evolution_details.map(detail => {
         const { trigger, ...itemObj } = detail;
 
         const evolution = {
-            pokemonEvolutionId: id,
             fromId: getPokemonId(from),
             toId: getPokemonId(to.species),
             trigger: trigger.name
@@ -35,7 +34,7 @@ const getEvolution = (id, from, to) => {
 
     if (to.evolves_to.length) {
         return evolutions
-            .concat(to.evolves_to.map(ee => getEvolution(id, to.species, ee)))
+            .concat(to.evolves_to.map(ee => getEvolution(to.species, ee)))
             .flat();
     }
     return evolutions;
@@ -74,11 +73,11 @@ exports.evolutions = async () => {
             continue;
         }
 
-        const { id, chain } = data;
+        const { chain } = data;
         const { evolves_to, species } = chain;
 
         const results = evolves_to.reduce((a, c) => {
-            return a.concat(getEvolution(id, species, c));
+            return a.concat(getEvolution(species, c));
         }, []);
 
         evolutions = evolutions.concat(results);
