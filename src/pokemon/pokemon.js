@@ -61,6 +61,7 @@ const pokemonDetails = (
         weight,
         order,
         typeGroups,
+        evolutions,
         color
     }
 ) =>  {
@@ -88,13 +89,19 @@ const pokemonDetails = (
         g => g.s < pokemonId && pokemonId <= g.e
     );
 
+    const pokemonEvolution = evolutions.find(evolution => {
+        const { fromId, toId } = evolution;
+        return fromId === pokemonId || toId === pokemonId;
+    });
+
     const pokemon = {
         id: pokemonId,
         height,
         weight,
         order,
         imageColor: color.name,
-        regionId: generationNo
+        regionId: generationNo,
+        pokemonEvolutionId: pokemonEvolution?.pokemonEvolutionId || null
     }
 
     return {
@@ -142,6 +149,7 @@ exports.pokemons = async (typeGroups, evolutions) => {
         } = pokemonDetails(pokemonId, {
             ...pokemonData,
             typeGroups,
+            evolutions,
             color: specieData.color
         });
 
