@@ -111,6 +111,36 @@ const pokemonDetails = (
     };
 }
 
+const getPokemonEvolutions = (pokemons, evolutions) => {
+    const grouping = (targets) => {
+        return targets
+            .filter(target => !!target.pokemonEvolutionId)
+            .reduce((accumulator, { pokemonEvolutionId, ...values }) => {
+                return Object.assign(accumulator, {
+                    [pokemonEvolutionId]: (accumulator[pokemonEvolutionId] || []).concat(values)
+                });
+            }, {});
+    };
+
+    const groupingPokemons = grouping(pokemons);
+    const groupingEvolutions = grouping(evolutions);
+
+    const keys = Array.from(
+        new Set([...Object.keys(groupingPokemons), ...Object.keys(groupingEvolutions)])
+    );
+
+    return keys.flatMap(key => {
+        const groupingPokemon = groupingPokemons[key] || [];
+        const groupingEvolution = groupingEvolutions[key] || [];
+        return groupingPokemon.flatMap(p =>
+            groupingEvolution.map(e => ({
+                pokemonId: p.id,
+                evolutionId: e.id
+            }))
+        );
+    });
+}
+
 exports.POKEMON_IDS = Object.freeze(
     [...Array(721)].map((_, i) => i + 1)
 );
@@ -161,10 +191,13 @@ exports.pokemons = async (typeGroups, evolutions) => {
         pokemons.push(pokemon);
     }
 
+    const pokemonEvolutions = getPokemonEvolutions(pokemons, evolutions);
+
     toJSON(flavorTextEntries, 'flavor-text-entries');
     toJSON(generas, 'generas');
     toJSON(langNames, 'pokemon-names');
     toJSON(pokemonTypes, 'pokemon-types');
     toJSON(status, 'status');
     toJSON(pokemons, 'pokemons');
+    toJSON(pokemonEvolutions, 'pokemon-evolutions');
 }
