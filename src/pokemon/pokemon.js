@@ -83,7 +83,7 @@ const pokemonDetails = (
                 [key]: base_stat
             }
         })
-        .reduce((a, c) => Object.assign(a, c), { pokemonId: 1 });
+        .reduce((a, c) => Object.assign(a, c), { pokemonId });
 
     const { generationNo } = GENERATIONS.find(
         g => g.s < pokemonId && pokemonId <= g.e
