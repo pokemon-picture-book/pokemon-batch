@@ -3,6 +3,8 @@ const { gameVersionGroups } = require('./game');
 const { toJSON } = require('./output');
 const { POKEMON_IDS } = require('./pokemon');
 
+const supportedGameVersionGroups = gameVersionGroups.filter(gameVersionGroup => ![9, 10, 11, 15].includes(gameVersionGroup.id));
+
 const getImagePaths = (dirName) => {
     const dirNames = fs.readdirSync(dirName);
     return dirNames
@@ -17,7 +19,7 @@ const getImagePaths = (dirName) => {
 }
 
 const isSomeGameVersionGroup = imagePath => {
-    return gameVersionGroups.some(gameVersionGroup => imagePath.includes(`/${gameVersionGroup.alias}/`))
+    return supportedGameVersionGroups.some(gameVersionGroup => imagePath.includes(`/${gameVersionGroup.alias}/`))
 }
 
 const isIncludeGameVersionGroup = imagePath => {
@@ -47,7 +49,7 @@ exports.images = () => {
 
                     if (isSomeGameVersionGroup(imagePath)) {
                         // gameVersionGroup のエイリアスとディレクトリ名称が一致している場合
-                        const gameVersionGroup = gameVersionGroups.find(gameVersionGroup => imagePath.includes(`/${gameVersionGroup.alias}/`));
+                        const gameVersionGroup = supportedGameVersionGroups.find(gameVersionGroup => imagePath.includes(`/${gameVersionGroup.alias}/`));
                         return {
                             pokemonId,
                             path,
