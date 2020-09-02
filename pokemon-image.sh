@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+cd `dirname $0`
+
 declare -a unowns=(
     "a"
     "b"

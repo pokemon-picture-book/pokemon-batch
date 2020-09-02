@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { clientSetup, imageDownload } = require('./download');
 
-const POKEMON_JSON_DIR = `${process.env.PWD}/../pokemon.json`;
+const POKEMON_JSON_DIR = `${__dirname}/../../../pokemon.json`;
 const POKEMON_ID = process.argv[2];
 const UNOWN_NAME = process.argv[3];
 
