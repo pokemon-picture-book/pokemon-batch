@@ -47,11 +47,18 @@ const getGameVersions = async () => {
         ];
     }, [[], []]);
 
-    const gameVersions = gameVersionTmps.map(gameVersion => ({
-        ...gameVersion,
-        gameVersionGroupId: this.gameVersionGroups.find(gameVersionGroup =>
-            gameVersionGroup.groups.includes(gameVersion.name)).id
-    }));
+    console.log('===== Get game versions from pokeAPI =====');
+    console.log(gameVersionTmps);
+    console.log('=============================');
+    console.log('===== Get game names from pokeAPI =====');
+    console.log(gameVersionNames);
+    console.log('=============================');
+    const gameVersions = gameVersionTmps
+        .filter(gameVersion => this.gameVersionGroups.some(({ groups }) => groups.includes(gameVersion.name)))
+        .map(gameVersion => ({
+            ...gameVersion,
+            gameVersionGroupId: this.gameVersionGroups.find(({ groups }) => groups.includes(gameVersion.name)).id
+        }));
 
     return {
         gameVersions,
