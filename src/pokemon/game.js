@@ -70,76 +70,91 @@ exports.gameVersionGroups = Object.freeze([
     {
         id: 1,
         alias: 'rgby',
+        isSupported: true,
         groups: ['red', 'blue', 'yellow']
     },
     {
         id: 2,
         alias: 'gsc',
+        isSupported: true,
         groups: ['gold', 'silver', 'crystal']
     },
     {
         id: 3,
         alias: 'rse',
+        isSupported: true,
         groups: ['ruby', 'sapphire', 'emerald']
     },
     {
         id: 4,
         alias: 'frlg',
+        isSupported: true,
         groups: ['firered', 'leafgreen']
     },
     {
         id: 5,
         alias: 'dp',
+        isSupported: true,
         groups: ['diamond', 'pearl']
     },
     {
         id: 6,
         alias: 'pt',
+        isSupported: true,
         groups: ['platinum']
     },
     {
         id: 7,
         alias: 'hgss',
+        isSupported: true,
         groups: ['heartgold', 'soulsilver']
     },
     {
         id: 8,
         alias: 'bw',
+        isSupported: true,
         groups: ['black', 'white']
     },
     {
         id: 9,
         alias: 'c',
+        isSupported: false,
         groups: ['colosseum']
     },
     {
         id: 10,
         alias: 'x',
+        isSupported: false,
         groups: ['xd']
     },
     {
         id: 11,
         alias: 'bw2',
+        isSupported: false,
         groups: ['black-2', 'white-2']
     },
     {
         id: 12,
         alias: 'xy',
+        isSupported: true,
         groups: ['x', 'y']
     },
     {
         id: 13,
         alias: 'oras',
+        isSupported: true,
         groups: ['omega-ruby', 'alpha-sapphire']
     },
     {
         id: 14,
         alias: 'sm',
+        isSupported: false,
         groups: ['sun', 'moon']
     },
     {
         id: 15,
         alias: 'usum',
+        isSupported: false,
         groups: ['ultra-sun', 'ultra-moon']
     }
 ]);
@@ -149,7 +164,8 @@ exports.games = async () => {
 
     const gameVersionGroups = this.gameVersionGroups.map(gameVersionGroup => ({
         id: gameVersionGroup.id,
-        alias: gameVersionGroup.alias
+        alias: gameVersionGroup.alias,
+        isSupported: gameVersionGroup.isSupported
     }));
 
     toJSON(gameVersionGroups, 'game-version-groups');
