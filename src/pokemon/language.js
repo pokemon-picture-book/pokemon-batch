@@ -16,8 +16,8 @@ const getLanguages = () => {
     // ];
 
     return [
-        { id: 1, name: 'ja-Hrkt' },
-        { id: 2, name: 'en' }
+        { id: 1, name: 'ja-Hrkt', labelName: '日本語' },
+        { id: 2, name: 'en', labelName: 'English' }
     ];
 }
 
