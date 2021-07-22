@@ -28,6 +28,39 @@ const isIncludeGameVersionGroup = imagePath => {
         imagePath.includes('/iconxy/');
 }
 
+/**
+ * メイン画像かのboolean値を返す.
+ *
+ * - メイン画像である場合の画像パスパターン
+ *   - /rgby/{pokemonId}_rg.png
+ *   - /gsc/{pokemonId}_kin.png
+ *   - /rse/{pokemonId}_rs.png
+ *   - /frlg/{pokemonId}_fl.png
+ *   - /dp/{pokemonId}.png
+ *   - /pt/{pokemonId}.png
+ *   - /hgss/{pokemonId}.png
+ *   - /bw/{pokemonId}.gif
+ *   - /xy/{pokemonId}.gif
+ *   - /oras/{pokemonId}.png
+ *
+ * @param {string} imagePath 画像パス
+ * @param {string} pokemonId 0埋めされた3桁のポケモンID
+ * @returns boolean メイン画像だった場合:true, そうでない場合:false
+ */
+const isMain = (imagePath, pokemonId) => {
+    const pokemonIdStr = String(pokemonId).padStart(3, '0');
+    return imagePath.includes(`/rgby/${pokemonIdStr}_rg.png`) ||
+        imagePath.includes(`/gsc/${pokemonIdStr}_kin.png`) ||
+        imagePath.includes(`/rse/${pokemonIdStr}_rs.png`) ||
+        imagePath.includes(`/frlg/${pokemonIdStr}_fl.png`) ||
+        imagePath.includes(`/dp/${pokemonIdStr}.png`) ||
+        imagePath.includes(`/pt/${pokemonIdStr}.png`) ||
+        imagePath.includes(`/hgss/${pokemonIdStr}.png`) ||
+        imagePath.includes(`/bw/${pokemonIdStr}.gif`) ||
+        imagePath.includes(`/xy/${pokemonIdStr}.gif`) ||
+        imagePath.includes(`/oras/${pokemonIdStr}.png`);
+}
+
 exports.images = () => {
     const imageDir = '../pokemon.json/img';
 
@@ -53,35 +86,40 @@ exports.images = () => {
                         return {
                             pokemonId,
                             path,
-                            gameVersionGroupId: gameVersionGroup.id
+                            gameVersionGroupId: gameVersionGroup.id,
+                            isMain: isMain(imagePath, pokemonId)
                         }
                     } else if (imagePath.includes('/1/')) {
                         // icon 内のディレクトリが "1" である場合、赤青黄バージョン
                         return {
                             pokemonId,
                             path,
-                            gameVersionGroupId: 1
+                            gameVersionGroupId: 1,
+                            isMain: false
                         }
                     } else if (imagePath.includes('/2/')) {
                         // icon 内のディレクトリが "2" である場合、金銀クリスタルバージョン
                         return {
                             pokemonId,
                             path,
-                            gameVersionGroupId: 2
+                            gameVersionGroupId: 2,
+                            isMain: false
                         }
                     } else if (imagePath.includes('/iconxy/')) {
                         // ディレクトリ名が "iconxy" である場合、xy のアイコン
                         return {
                             pokemonId,
                             path,
-                            gameVersionGroupId: 12
+                            gameVersionGroupId: 12,
+                            isMain: false
                         }
                     }
                     // その他のゲームのアイコンは共通
                     return [3, 4, 5, 6, 7, 8, 13].map(gameVersionGroupId => ({
                         pokemonId,
                         path,
-                        gameVersionGroupId
+                        gameVersionGroupId,
+                        isMain: isMain(imagePath, pokemonId)
                     }))
                 });
 
