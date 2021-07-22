@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { toJSON } = require('./output');
+const{ POKEMON_IDS } = require('./pokemon');
 
 const getPokemonId = ({ url }) => {
     const pokemonIdStr = url.split('/').filter(specie => !!specie).pop();
@@ -10,13 +11,20 @@ const getPokemonId = ({ url }) => {
 };
 
 const getEvolution = (id, from, to) => {
+    const fromId = getPokemonId(from);
+    const toId = getPokemonId(to.species);
+
+    if (!(POKEMON_IDS.includes(fromId) && POKEMON_IDS.includes(toId))) {
+        return [];
+    }
+
     const evolutions = to.evolution_details.map(detail => {
         const { trigger, ...itemObj } = detail;
 
         const evolution = {
             pokemonEvolutionId: id,
-            fromId: getPokemonId(from),
-            toId: getPokemonId(to.species),
+            fromId,
+            toId,
             trigger: trigger.name
         };
 
