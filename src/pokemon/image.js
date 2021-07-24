@@ -43,12 +43,27 @@ const isIncludeGameVersionGroup = imagePath => {
  *   - /xy/{pokemonId}.gif
  *   - /oras/{pokemonId}.png
  *
+ * 特殊画像(メイン画像のパスが上記ルールと異なる)
+ * - pokemonID:201
+ * - pokemonID:666
+ *
  * @param {string} imagePath 画像パス
  * @param {string} pokemonId 0埋めされた3桁のポケモンID
  * @returns boolean メイン画像だった場合:true, そうでない場合:false
  */
 const isMain = (imagePath, pokemonId) => {
-    const pokemonIdStr = String(pokemonId).padStart(3, '0');
+    const pokemonIdStr = ((pokemonId) => {
+        const formatPokemonId = String(pokemonId).padStart(3, '0');
+        switch (pokemonId) {
+            case 201:
+                return `${formatPokemonId}a`;
+            case 666:
+                return `${formatPokemonId}-1`;
+            default:
+                return formatPokemonId;
+        }
+    })(pokemonId);
+
     return imagePath.includes(`/rgby/${pokemonIdStr}_rg.png`) ||
         imagePath.includes(`/gsc/${pokemonIdStr}_kin.png`) ||
         imagePath.includes(`/rse/${pokemonIdStr}_rs.png`) ||
