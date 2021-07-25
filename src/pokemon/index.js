@@ -1,6 +1,7 @@
 const { evolutions } = require('./evolution');
 const { languages } = require('./language');
 const { pokemons } = require('./pokemon');
+const { gamesRegions } = require('./game-region');
 const { games } = require('./game');
 const { types } = require('./type');
 const { regions } = require('./region');
@@ -11,7 +12,7 @@ const { images } = require('./image');
 
     images();
 
-    await games();
+    const { gameVersionGroups } = await games();
 
     const typeData = await types();
 
@@ -19,5 +20,7 @@ const { images } = require('./image');
 
     await pokemons(typeData.types, evolutionData);
 
-    await regions();
+    const { regions: regionData } = await regions();
+
+    await gamesRegions(gameVersionGroups, regionData);
 })();

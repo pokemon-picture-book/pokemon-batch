@@ -171,4 +171,10 @@ exports.games = async () => {
     toJSON(gameVersionGroups, 'game-version-groups');
     toJSON(gameVersions, 'game-versions');
     toJSON(gameVersionNames, 'game-version-names');
+
+    return {
+        gameVersionGroups,
+        gameVersions,
+        gameVersionNames
+    }
 }
