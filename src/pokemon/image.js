@@ -73,6 +73,7 @@ const isMain = (imagePath, pokemonId) => {
         imagePath.includes(`/hgss/${pokemonIdStr}.png`) ||
         imagePath.includes(`/bw/${pokemonIdStr}.gif`) ||
         imagePath.includes(`/xy/${pokemonIdStr}.gif`) ||
+        imagePath.includes(`/xy/thum/${pokemonIdStr}.gif`) ||
         imagePath.includes(`/oras/${pokemonIdStr}.png`);
 }
 
