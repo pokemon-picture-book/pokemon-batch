@@ -59,6 +59,7 @@ const isMain = (imagePath, pokemonId) => {
             case 201:
                 return `${formatPokemonId}a`;
             case 412:
+            case 413:
                 return `${formatPokemonId}kusaki`;
             case 666:
                 return `${formatPokemonId}-1`;
