@@ -15,7 +15,8 @@ const getImagePaths = (dirName) => {
                 return getImagePaths(path);
             }
             return path;
-        });
+        })
+        .filter(path => !path.includes('.DS_Store'));
 }
 
 const isSomeGameVersionGroup = imagePath => {
@@ -57,6 +58,8 @@ const isMain = (imagePath, pokemonId) => {
         switch (pokemonId) {
             case 201:
                 return `${formatPokemonId}a`;
+            case 412:
+                return `${formatPokemonId}kusaki`;
             case 666:
                 return `${formatPokemonId}-1`;
             default:
@@ -77,10 +80,15 @@ const isMain = (imagePath, pokemonId) => {
         imagePath.includes(`/oras/${pokemonIdStr}.png`);
 }
 
+const isShiny = (path, pokemonId) => {
+    const pokemonIdStr = String(pokemonId).padStart(3, '0');
+    return path.includes(`${pokemonIdStr}s`);
+}
+
 exports.images = () => {
     const imageDir = '../pokemon.json/img';
 
-    const [pokemonGameImages, pokemonImages] = POKEMON_IDS
+    const [pokemonGameImages, pokemonFootmarkImages, pokemonWarkImages] = POKEMON_IDS
         .map(pokemonId => {
             const pokemonImageDirName = String(pokemonId).padStart(3, '0');
             const pokemonImageDir = `${imageDir}/${pokemonImageDirName}`;
@@ -103,23 +111,29 @@ exports.images = () => {
                             pokemonId,
                             path,
                             gameVersionGroupId: gameVersionGroup.id,
-                            isMain: isMain(imagePath, pokemonId)
+                            isMain: isMain(imagePath, pokemonId),
+                            isHandheldIcon: false,
+                            isShiny: isShiny(imagePath, pokemonId)
                         }
-                    } else if (imagePath.includes('/1/')) {
+                    } else if (imagePath.includes('/icon/') && imagePath.includes('/1/')) {
                         // icon 内のディレクトリが "1" である場合、赤青黄バージョン
                         return {
                             pokemonId,
                             path,
                             gameVersionGroupId: 1,
-                            isMain: false
+                            isMain: false,
+                            isHandheldIcon: true,
+                            isShiny: false
                         }
-                    } else if (imagePath.includes('/2/')) {
+                    } else if (imagePath.includes('/icon/') && imagePath.includes('/2/')) {
                         // icon 内のディレクトリが "2" である場合、金銀クリスタルバージョン
                         return {
                             pokemonId,
                             path,
                             gameVersionGroupId: 2,
-                            isMain: false
+                            isMain: false,
+                            isHandheldIcon: true,
+                            isShiny: false
                         }
                     } else if (imagePath.includes('/iconxy/')) {
                         // ディレクトリ名が "iconxy" である場合、xy のアイコン
@@ -127,20 +141,37 @@ exports.images = () => {
                             pokemonId,
                             path,
                             gameVersionGroupId: 12,
-                            isMain: false
+                            isMain: false,
+                            isHandheldIcon: true,
+                            isShiny: imagePath.includes('/s/')
                         }
                     }
                     // その他のゲームのアイコンは共通
+                    const isMainOther = isMain(imagePath, pokemonId)
+                    const isShinyOther = imagePath.includes('/s/')
                     return [3, 4, 5, 6, 7, 8, 13].map(gameVersionGroupId => ({
                         pokemonId,
                         path,
                         gameVersionGroupId,
-                        isMain: isMain(imagePath, pokemonId)
+                        isMain: isMainOther,
+                        isHandheldIcon: true,
+                        isShiny: isShinyOther
                     }))
                 });
 
-            const pokemonImages = imagePaths
-                .filter(imagePath => !isIncludeGameVersionGroup(imagePath))
+            const otherPokemonImages = imagePaths.filter(imagePath => !isIncludeGameVersionGroup(imagePath))
+            const pokemonFootmarkImages = otherPokemonImages
+                .filter(imagePath => imagePath.includes('/footmark/'))
+                .map(imagePath => {
+                    const path = imagePath.split(imageDir).pop()
+                    return {
+                        pokemonId,
+                        path
+                    }
+                });
+
+            const pokemonWarkImages = imagePaths
+                .filter(imagePath => imagePath.includes('/overworld/'))
                 .map(imagePath => {
                     const path = imagePath.split(imageDir).pop()
                     return {
@@ -151,16 +182,19 @@ exports.images = () => {
 
             return {
                 pokemonGameImages,
-                pokemonImages
+                pokemonFootmarkImages,
+                pokemonWarkImages
             }
         })
         .reduce((a, c) => {
-            const [AccumulatorPokemonGameImages, AccumulatorPokemonImages] = a;
-            AccumulatorPokemonGameImages.push(c.pokemonGameImages);
-            AccumulatorPokemonImages.push(c.pokemonImages);
-            return [AccumulatorPokemonGameImages.flat(), AccumulatorPokemonImages.flat()];
-        }, [[], []]);
+            const [pokemonGameImages, pokemonFootmarkImages, pokemonWarkImages] = a;
+            pokemonGameImages.push(...c.pokemonGameImages);
+            pokemonFootmarkImages.push(...c.pokemonFootmarkImages);
+            pokemonWarkImages.push(...c.pokemonWarkImages);
+            return [pokemonGameImages, pokemonFootmarkImages, pokemonWarkImages];
+        }, [[], [], []]);
 
     toJSON(pokemonGameImages, 'pokemon-game-images');
-    toJSON(pokemonImages, 'pokemon-images');
+    toJSON(pokemonFootmarkImages, 'pokemon-footmark-images');
+    toJSON(pokemonWarkImages, 'pokemon-wark-images');
 }
