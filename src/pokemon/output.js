@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const outputPath = '../pokemon.json/data';
+const outputPath = '../pokemon-api/db/seed';
 
 const makeDir = (dir) => {
     if (!fs.existsSync(dir)) {

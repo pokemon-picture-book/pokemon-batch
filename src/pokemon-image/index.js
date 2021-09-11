@@ -1,13 +1,13 @@
 const fs = require('fs');
 const { clientSetup, imageDownload } = require('./download');
 
-const POKEMON_JSON_DIR = `${__dirname}/../../../pokemon.json`;
+const POKEMON_JSON_DIR = `${__dirname}/../../../pokemon-api`;
 const POKEMON_ID = process.argv[2];
 const UNOWN_NAME = process.argv[3];
 
 (async () => {
     if (!fs.existsSync(POKEMON_JSON_DIR)) {
-        throw new Error('npm script で実行してください。また pokemon.json プロジェクトをクローンしてください。');
+        throw new Error('npm script で実行してください。また pokemon-api プロジェクトをクローンしてください。');
     }
 
     if (!POKEMON_ID) {
@@ -20,8 +20,8 @@ const UNOWN_NAME = process.argv[3];
 
     const pokemonNo = POKEMON_ID.padStart(3, '0');
     const targetDir = UNOWN_NAME ?
-        `${POKEMON_JSON_DIR}/img/${pokemonNo}/${UNOWN_NAME}` :
-        `${POKEMON_JSON_DIR}/img/${pokemonNo}`
+        `${POKEMON_JSON_DIR}/pokemon-img/${pokemonNo}/${UNOWN_NAME}` :
+        `${POKEMON_JSON_DIR}/pokemon-img/${pokemonNo}`
 
     clientSetup(targetDir);
     imageDownload(pokemonNo, UNOWN_NAME);

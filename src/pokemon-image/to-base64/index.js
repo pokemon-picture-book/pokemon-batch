@@ -18,13 +18,13 @@ const getImagePaths = (dirName) => {
 }
 
 (async () => {
-    const imageDir = '../pokemon.json/img';
+    const imageDir = '../pokemon-api/pokemon-img';
 
     const pokemonImageDirName = String(/* pokemonId */ 1).padStart(3, '0');
     const pokemonImageDir = `${imageDir}/${pokemonImageDirName}`;
 
     if (!fs.existsSync(pokemonImageDir)) {
-        throw new Error(`${/* pokemonId */ 1}, pokemon.json プロジェクトをクローンしてください。`);
+        throw new Error(`${/* pokemonId */ 1}, pokemon-api プロジェクトをクローンしてください。`);
     }
 
     const imagePaths = getImagePaths(pokemonImageDir);

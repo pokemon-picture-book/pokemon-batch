@@ -87,7 +87,7 @@ const isShiny = (path, pokemonId) => {
 }
 
 exports.images = () => {
-    const imageDir = '../pokemon.json/img';
+    const imageDir = '../pokemon-api/pokemon-img';
 
     const [pokemonGameImages, pokemonFootmarkImages, pokemonWarkImages] = POKEMON_IDS
         .map(pokemonId => {
@@ -95,7 +95,7 @@ exports.images = () => {
             const pokemonImageDir = `${imageDir}/${pokemonImageDirName}`;
 
             if (!fs.existsSync(pokemonImageDir)) {
-                throw new Error(`${pokemonId}, pokemon.json プロジェクトをクローンしてください。`);
+                throw new Error(`${pokemonId}, pokemon-api プロジェクトをクローンしてください。`);
             }
 
             const imagePaths = getImagePaths(pokemonImageDir);
