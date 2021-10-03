@@ -18,4 +18,4 @@ updates:
     # 最大 5 個までPR作成する
     open-pull-requests-limit: 5
     # バージョン更新のプルリクエストを発行する
-    target-branch: "develop"
+    target-branch: "master"
